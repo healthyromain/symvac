@@ -5,12 +5,12 @@ namespace App\Controller;
 use App\Entity\Vacataire;
 use App\Form\VacataireType;
 use App\Repository\VacataireRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Doctrine\ORM\EntityManagerInterface;
 
 final class VacataireController extends AbstractController
 {
@@ -42,7 +42,7 @@ final class VacataireController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($vacataire);
             $entityManager->flush();
-            
+
             $this->addFlash(
                 'success',
                 'Vos changements ont été enregistrés !'
@@ -53,6 +53,32 @@ final class VacataireController extends AbstractController
 
         return $this->render('pages/vacataire/new.html.twig', [
             'form' => $form->createView(),
+        ]);
+    }
+
+    #[Route('/vacataire/{id}/modifier', name: 'vacataire_edit', methods: ['GET', 'POST'])]
+    public function edit(
+        Vacataire $vacataire,
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $form = $this->createForm(VacataireType::class, $vacataire);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+
+            $this->addFlash(
+                'success',
+                'Le vacataire a bien été modifié !'
+            );
+
+            return $this->redirectToRoute('app_vacataire');
+        }
+
+        return $this->render('pages/vacataire/edit.html.twig', [
+            'form' => $form->createView(),
+            'vacataire' => $vacataire,
         ]);
     }
 }
