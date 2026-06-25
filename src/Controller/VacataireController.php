@@ -40,6 +40,7 @@ final class VacataireController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+
             $entityManager->persist($vacataire);
             $entityManager->flush();
 
@@ -66,6 +67,7 @@ final class VacataireController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+
             $entityManager->flush();
 
             $this->addFlash(
@@ -80,5 +82,21 @@ final class VacataireController extends AbstractController
             'form' => $form->createView(),
             'vacataire' => $vacataire,
         ]);
+    }
+
+    #[Route('/vacataire/{id}/supprimer', name: 'vacataire_delete', methods: ['POST'])]
+    public function delete(
+        Vacataire $vacataire,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $entityManager->remove($vacataire);
+        $entityManager->flush();
+
+        $this->addFlash(
+            'success',
+            'Le vacataire a bien été supprimé !'
+        );
+
+        return $this->redirectToRoute('app_vacataire');
     }
 }
