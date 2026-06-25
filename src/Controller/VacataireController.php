@@ -2,12 +2,15 @@
 
 namespace App\Controller;
 
+use App\Entity\Vacataire;
+use App\Form\VacataireType;
 use App\Repository\VacataireRepository;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 final class VacataireController extends AbstractController
 {
@@ -25,6 +28,31 @@ final class VacataireController extends AbstractController
 
         return $this->render('pages/vacataire/index.html.twig', [
             'vacataires' => $vacataires,
+        ]);
+    }
+
+    #[Route('/vacataire/nouveau', name: 'vacataire_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $vacataire = new Vacataire();
+
+        $form = $this->createForm(VacataireType::class, $vacataire);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->persist($vacataire);
+            $entityManager->flush();
+            
+            $this->addFlash(
+                'success',
+                'Vos changements ont été enregistrés !'
+            );
+
+            return $this->redirectToRoute('app_vacataire');
+        }
+
+        return $this->render('pages/vacataire/new.html.twig', [
+            'form' => $form->createView(),
         ]);
     }
 }
